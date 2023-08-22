@@ -10,9 +10,8 @@ RUN npm install
 COPY ./frontend/ .
 RUN npm run build
 
-# Setup Container and install Flask
-FROM lsiobase/alpine:3.12 as deploy-stage
-# MAINTANER Your Name "info@selfhosted.pro"
+# Deploy Stage
+FROM python:3.8-alpine as deploy-stage
 
 # Set Variables
 ENV PYTHONIOENCODING=UTF-8
@@ -22,33 +21,25 @@ WORKDIR /api
 COPY ./backend/requirements.txt .
 
 # Install Dependancies
-RUN \
- echo "**** install build packages ****" && \
- apk add --no-cache --virtual=build-dependencies \
-	g++ \
-	make \
-	postgresql-dev \
-	python3-dev \
-	libffi-dev \
-	ruby-dev &&\
- echo "**** install packages ****" && \
- apk add --no-cache \
-	python3 \
-	py3-pip \
-	mysql-dev \
-        postgresql-dev \
-	mysql-dev \
-	nginx &&\
- gem install sass &&\
- echo "**** Installing Python Modules ****" && \
- pip3 install wheel &&\
- pip3 install -r requirements.txt &&\
- echo "**** Cleaning Up ****" &&\
- apk del --purge \
-	build-dependencies && \
- rm -rf \
-	/root/.cache \
-	/tmp/*
+RUN apk add --no-cache --virtual=build-dependencies \
+    g++ \
+    make \
+    postgresql-dev \
+    python3-dev \
+    libffi-dev \
+    ruby-dev && \
+    apk add --no-cache \
+    python3 \
+    py3-pip \
+    mysql-dev \
+    postgresql-dev \
+    mysql-dev \
+    nginx && \
+    gem install sass && \
+    pip3 install wheel && \
+    pip3 install -r requirements.txt && \
+    apk del --purge build-dependencies && \
+    rm -rf /root/.cache /tmp/*
 
 COPY ./backend/api ./
 COPY ./backend/alembic /alembic
