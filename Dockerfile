@@ -1,5 +1,5 @@
 # Build Vue
-FROM node:14.5.0-alpine as build-stage
+FROM node:latest as build-stage
 
 ARG VUE_APP_VERSION
 ENV VUE_APP_VERSION=${VUE_APP_VERSION}
@@ -11,7 +11,7 @@ COPY ./frontend/ .
 RUN npm run build
 
 # Deploy Stage
-FROM python:3.8-alpine as deploy-stage
+FROM python:alpine3.18 as deploy-stage
 
 # Set Variables
 ENV PYTHONIOENCODING=UTF-8
