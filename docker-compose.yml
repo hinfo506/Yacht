@@ -1,0 +1,15 @@
+---
+version: '3'
+services:
+  yacht:
+    container_name: yacht-Devel
+    restart: unless-stopped
+    ports:
+      - 8084:8000
+    volumes:
+      - yacht:/config
+      - /var/run/docker.sock:/var/run/docker.sock
+    image: selfhostedpro/yacht:devel
+
+volumes:
+  yacht:

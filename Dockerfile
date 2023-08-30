@@ -1,5 +1,5 @@
 # Build Vue
-FROM node:latest as build-stage
+FROM node:14.5.0-alpine as build-stage
 
 ARG VUE_APP_VERSION
 ENV VUE_APP_VERSION=${VUE_APP_VERSION}
@@ -10,8 +10,9 @@ RUN npm install
 COPY ./frontend/ .
 RUN npm run build
 
-# Deploy Stage
-FROM python:alpine3.18 as deploy-stage
+# Setup Container and install Flask
+FROM lsiobase/alpine:3.12 as deploy-stage
+# MAINTANER Your Name "info@selfhosted.pro"
 
 # Set Variables
 ENV PYTHONIOENCODING=UTF-8
@@ -21,25 +22,33 @@ WORKDIR /api
 COPY ./backend/requirements.txt .
 
 # Install Dependancies
-RUN apk add --no-cache --virtual=build-dependencies \
-    g++ \
-    make \
-    postgresql-dev \
-    python3-dev \
-    libffi-dev \
-    ruby-dev && \
-    apk add --no-cache \
-    python3 \
-    py3-pip \
-    mysql-dev \
-    postgresql-dev \
-    mysql-dev \
-    nginx && \
-    gem install sass && \
-    pip3 install wheel && \
-    pip3 install -r requirements.txt && \
-    apk del --purge build-dependencies && \
-    rm -rf /root/.cache /tmp/*
+RUN \
+ echo "**** install build packages ****" && \
+ apk add --no-cache --virtual=build-dependencies \
+	g++ \
+	make \
+	postgresql-dev \
+	python3-dev \
+	libffi-dev \
+	ruby-dev &&\
+ echo "**** install packages ****" && \
+ apk add --no-cache \
+	python3 \
+	py3-pip \
+	mysql-dev \
+        postgresql-dev \
+	mysql-dev \
+	nginx &&\
+ gem install sass &&\
+ echo "**** Installing Python Modules ****" && \
+ pip3 install wheel &&\
+ pip3 install -r requirements.txt &&\
+ echo "**** Cleaning Up ****" &&\
+ apk del --purge \
+	build-dependencies && \
+ rm -rf \
+	/root/.cache \
+	/tmp/*
 
 COPY ./backend/api ./
 COPY ./backend/alembic /alembic
